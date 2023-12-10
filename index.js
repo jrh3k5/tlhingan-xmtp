@@ -3,13 +3,14 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 import xml2js from 'xml2js';
 import MiniSearch from 'minisearch'
+import path from 'path';
 
 dotenv.config();
 
 console.log("Reading in Klingon data");
 
 const documents = [];
-const dataDir = "./klingon-assistant-data"
+const dataDir = path.join(process.cwd(), 'klingon-assistant-data')
 fs.readdirSync(dataDir).forEach(file => {
     // skip anything that isn't data 
     if (!file.match(/^mem\-[0-9]+\-[a-zA-Z]+\.xml$/)) {
@@ -25,7 +26,7 @@ fs.readdirSync(dataDir).forEach(file => {
         return
     }
 
-    const fileXML = fs.readFileSync(dataDir + "/" + file);
+    const fileXML = fs.readFileSync(path.join(dataDir, file));
     const embeddedXML = `<tables>${fileXML}</tables>`;
     xml2js.parseString(embeddedXML, (err, obj) => {
         if (err) {
