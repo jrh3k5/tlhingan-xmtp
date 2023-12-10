@@ -2,6 +2,7 @@ import run from "@xmtp/bot-starter";
 import dotenv from 'dotenv';
 import fs from 'fs';
 import xml2js from 'xml2js';
+import MiniSearch from 'minisearch'
 
 dotenv.config();
 
@@ -46,6 +47,7 @@ fs.readdirSync(dataDir).forEach(file => {
             const definition = definitionCol["_"];
 
             documents.push({
+                id: `${entryName}-${tableIndex}`,
                 en: definition,
                 tlh: entryName
             });
@@ -54,6 +56,16 @@ fs.readdirSync(dataDir).forEach(file => {
 });
 
 console.log("Klingon data loading complete");
+
+console.log("Building search index");
+
+const searchIndex = new MiniSearch({
+    fields: ["en", "tlh"],
+    storeFields: ["en", "tlh"]
+})
+searchIndex.addAll(documents);
+
+console.log("Search index construction complete");
 
 run(async (context) => {
     const messageBody = context.message.content;
