@@ -68,6 +68,9 @@ searchIndex.addAll(documents);
 
 console.log("Search index construction complete");
 
+// do a dummy export just to make Vercel happy
+module.exports = {};
+
 run(async (context) => {
     const messageBody = context.message.content;
     await context.reply(`ECHO: ${messageBody}`);
