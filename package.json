@@ -1,0 +1,25 @@
+{
+  "name": "tlhingan-xmtp",
+  "version": "1.0.0",
+  "description": "A bot used to make Klingon dictionary data available through XMTP messaging",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "github.com/jrh3k5/tlhingan-xmtp"
+  },
+  "keywords": [
+    "klingon",
+    "xmtp"
+  ],
+  "author": "Joshua Hyde",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@xmtp/bot-starter": "^1.1.4",
+    "dotenv": "^16.3.1",
+    "xml2js": "^0.6.2"
+  }
+}
