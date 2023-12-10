@@ -5,6 +5,8 @@ import xml2js from 'xml2js';
 import MiniSearch from 'minisearch'
 import path from 'path';
 
+import { getEnglish, isNoun, getKlingon } from './klingon-data/index.js';
+
 dotenv.config();
 
 console.log("Reading in Klingon data");
@@ -34,23 +36,21 @@ fs.readdirSync(dataDir).forEach(file => {
             return
         }
 
-        obj.tables.table.forEach((table, tableIndex) => {
-            const entryNameCol = table.column.filter(c => c["$"].name === "entry_name")[0];
-            if (!entryNameCol) {
-                console.log(`No entry_name found for table in ${file} at table index ${tableIndex}; skipping it`);
+        obj.tables.table.filter(isNoun).forEach((table, tableIndex) => {
+            const klingon = getKlingon(table);
+            if (!klingon) {
+                console.log(`No Klingon found for table in ${file} at table index ${tableIndex}; skipping it`);
             }
-            const entryName = entryNameCol["_"];
 
-            const definitionCol = table.column.filter(c => c["$"].name === "definition")[0];
-            if (!definitionCol) {
-                console.log(`No definition found for table in ${file} at table index ${tableIndex}; skipping it`);
+            const english = getEnglish(table);
+            if (!english) {
+                console.log(`No English found for table in ${file} at table index ${tableIndex}; skipping it`);
             }
-            const definition = definitionCol["_"];
 
             documents.push({
-                id: `${entryName}-${tableIndex}`,
-                en: definition,
-                klingon: entryName
+                id: `${klingon}-${tableIndex}`,
+                en: english,
+                klingon: klingon
             });
         })
     })
@@ -66,7 +66,7 @@ const searchIndex = new MiniSearch({
 })
 searchIndex.addAll(documents);
 
-console.log("Search index construction complete");
+console.log(`Search index construction complete (indexed ${documents.length} entries)`);
 
 run(async (context) => {
     const messageBody = context.message.content;
@@ -75,20 +75,22 @@ run(async (context) => {
     let response;
     if (normalizedBody.startsWith("en ")) {
         const englishWord = normalizedBody.substring(3)
-        const results = searchIndex.search(englishWord, { fields: ["en" ]});
+        const results = searchIndex.search(englishWord, { fields: ["en"]});
 
-        console.log(results);
-
-        if (results.length > 5) {
-            response = `Your search returned ${results.length} results; here are the first five:`;
+        if (!results.length) {
+            response = "Your search returned no results";
         } else {
-            response = `Your search returned ${results.length} results:`
-        }
+            if (results.length > 5) {
+                response = `Your search returned ${results.length} results; here are the first five:`;
+            } else {
+                response = `Your search returned ${results.length} results:`
+            }
 
-        response += "\n\n";
+            response += "\n\n";
 
-        for (let i = 0; i < results.length && i < 5; i++) {
-            response += `* ${results[i].klingon}: ${results[i].en}\n`
+            for (let i = 0; i < results.length && i < 5; i++) {
+                response += `* ${results[i].klingon}: ${results[i].en}\n`
+            }
         }
     } else {
         response = "Sorry, I don't understand. Try entering a search of 'en <English word>'"
