@@ -50,7 +50,7 @@ fs.readdirSync(dataDir).forEach(file => {
             documents.push({
                 id: `${entryName}-${tableIndex}`,
                 en: definition,
-                tlh: entryName
+                klingon: entryName
             });
         })
     })
@@ -61,8 +61,8 @@ console.log("Klingon data loading complete");
 console.log("Building search index");
 
 const searchIndex = new MiniSearch({
-    fields: ["en", "tlh"],
-    storeFields: ["en", "tlh"]
+    fields: ["en", "klingon"],
+    storeFields: ["en", "klingon"]
 })
 searchIndex.addAll(documents);
 
@@ -70,5 +70,29 @@ console.log("Search index construction complete");
 
 run(async (context) => {
     const messageBody = context.message.content;
-    await context.reply(`ECHO: ${messageBody}`);
+    const normalizedBody = messageBody.toLowerCase();
+
+    let response;
+    if (normalizedBody.startsWith("en ")) {
+        const englishWord = normalizedBody.substring(3)
+        const results = searchIndex.search(englishWord, { fields: ["en" ]});
+
+        console.log(results);
+
+        if (results.length > 5) {
+            response = `Your search returned ${results.length} results; here are the first five:`;
+        } else {
+            response = `Your search returned ${results.length} results:`
+        }
+
+        response += "\n\n";
+
+        for (let i = 0; i < results.length && i < 5; i++) {
+            response += `* ${results[i].klingon}: ${results[i].en}\n`
+        }
+    } else {
+        response = "Sorry, I don't understand. Try entering a search of 'en <English word>'"
+    }
+
+    await context.reply(response);
 });
