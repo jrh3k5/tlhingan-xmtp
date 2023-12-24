@@ -6,7 +6,7 @@ An XMTP bot used to surface definitions for Klingon words.
 You need to set up an environment that looks like:
 
 ```
-ENV=production
+XMTP_ENV=production
 KEY=<hex-encoded private key of the wallet address at which the bot will receive messages>
 ```
 
