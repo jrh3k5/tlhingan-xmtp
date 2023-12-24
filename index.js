@@ -10,10 +10,11 @@ import { getEnglish, isNoun, getKlingon } from './klingon-data/index.js';
 
 dotenv.config();
 
-console.log("Reading in Klingon data");
-
 const documents = [];
-const dataDir = path.join(process.cwd(), 'klingon-assistant-data')
+const dataDir = path.join(process.cwd(), 'klingon-assistant-data');
+
+console.log(`Reading in Klingon data in ${dataDir}`);
+
 fs.readdirSync(dataDir).forEach(file => {
     // skip anything that isn't data 
     if (!file.match(/^mem\-[0-9]+\-[a-zA-Z]+\.xml$/)) {
