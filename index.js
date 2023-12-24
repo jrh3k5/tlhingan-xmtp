@@ -4,6 +4,7 @@ import fs from 'fs';
 import xml2js from 'xml2js';
 import MiniSearch from 'minisearch'
 import path from 'path';
+import Bottleneck from "bottleneck";
 
 import { getEnglish, isNoun, getKlingon } from './klingon-data/index.js';
 
@@ -68,7 +69,7 @@ searchIndex.addAll(documents);
 
 console.log(`Search index construction complete (indexed ${documents.length} entries)`);
 
-run(async (context) => {
+const botHandler = async (context) => {
     const messageBody = context.message.content;
     const normalizedBody = messageBody.toLowerCase();
 
@@ -97,4 +98,17 @@ run(async (context) => {
     }
 
     await context.reply(response);
+};
+
+const limiter = new Bottleneck({
+    maxConcurrent: 10,
+    minTime: 250,
+});
+
+const rateLimitedHandler = limiter.wrap(botHandler);
+
+run(async (context) => {
+    rateLimitedHandler.withOptions({
+        expiration: 1000,
+    }, context);
 });
